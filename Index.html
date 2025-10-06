@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proceso de Instalación de Redes - BPMN</title>
+    <script src="https://unpkg.com/bpmn-js@11.1.0/dist/bpmn-viewer.development.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            color: var(--dark-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            width: 100%;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: var(--secondary-color);
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            background: white;
+            color: var(--primary-color);
+            border: 2px solid var(--secondary-color);
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow);
+        }
+        
+        .control-btn:hover {
+            background: var(--secondary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .control-btn.active {
+            background: var(--secondary-color);
+            color: white;
+        }
+        
+        .diagram-container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            height: 70vh;
+            min-height: 500px;
+        }
+        
+        #bpmn-container {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #eaeaea;
+            border-radius: 4px;
+        }
+        
+        .zoom-info {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-panel {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .info-panel h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-panel p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .process-stats {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .stat {
+            text-align: center;
+            padding: 15px;
+            background: var(--light-color);
+            border-radius: var(--border-radius);
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--dark-color);
+            margin-top: 5px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: var(--primary-color);
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .control-btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+            
+            .diagram-container {
+                height: 60vh;
+            }
+            
+            .zoom-info {
+                bottom: 15px;
+                right: 15px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .process-stats {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Proceso de Instalación de Redes</h1>
+            <p class="subtitle">Diagrama BPMN que representa el flujo completo del proceso de instalación de redes, mostrando las interacciones entre los diferentes equipos involucrados.</p>
+        </header>
+        
+        <div class="controls">
+            <button class="control-btn" id="zoom-in">
+                <i class="fas fa-search-plus"></i> Acercar
+            </button>
+            <button class="control-btn" id="zoom-out">
+                <i class="fas fa-search-minus"></i> Alejar
+            </button>
+            <button class="control-btn" id="zoom-fit">
+                <i class="fas fa-expand-arrows-alt"></i> Ajustar a la vista
+            </button>
+            <button class="control-btn" id="zoom-reset">
+                <i class="fas fa-sync-alt"></i> Restablecer zoom
+            </button>
+            <button class="control-btn" id="download">
+                <i class="fas fa-download"></i> Descargar diagrama
+            </button>
+        </div>
+        
+        <div class="diagram-container">
+            <div id="bpmn-container"></div>
+            <div class="zoom-info">
+                <i class="fas fa-search"></i>
+                <span id="zoom-level">100%</span>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <h2><i class="fas fa-info-circle"></i> Información del Proceso</h2>
+            <p>Este diagrama BPMN representa el proceso completo de instalación de redes, desde la recepción de la solicitud hasta la finalización del proceso. El diagrama muestra las interacciones entre tres equipos principales: Equipo de Inventario, Sistema de Inventario y Equipo de Instalaciones.</p>
+            <p>Utilice los controles de zoom para explorar el diagrama en detalle. Puede acercar, alejar, ajustar a la vista o restablecer el zoom según sus necesidades.</p>
+            
+            <div class="process-stats">
+                <div class="stat">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Equipos Involucrados</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">11</div>
+                    <div class="stat-label">Tareas del Proceso</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">2</div>
+                    <div class="stat-label">Puntos de Decisión</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">13</div>
+                    <div class="stat-label">Flujos de Secuencia</div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Diagrama BPMN - Proceso de Instalación de Redes &copy; 2023</p>
+        </footer>
+    </div>
+
+    <script>
+        const bpmnXML = `<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:collaboration id="Collaboration_1">
+    <bpmn:participant id="Participant_Instalacion" name="Proceso de Instalación de Redes" processRef="Process_1" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_1" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_Inventario" name="Equipo de Inventario">
+        <bpmn:flowNodeRef>StartEvent_1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PrepararEquipos</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_EquiposListos</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_NotificarFaltantes</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Sistema" name="Sistema de Inventario">
+        <bpmn:flowNodeRef>Task_ActualizarStock</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RegistrarInstalacion</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Sistema</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Instaladores" name="Equipo de Instalaciones">
+        <bpmn:flowNodeRef>Task_RecibirEquipos</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_InstalarRed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_InstalacionOK</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RealizarAjustes</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ConfirmarFinalizacion</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Proceso</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_1" name="Solicitud de Instalación Recibida">
+      <bpmn:outgoing>Flow_01</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_PrepararEquipos" name="Verificar y Preparar Equipos">
+      <bpmn:incoming>Flow_01</bpmn:incoming>
+      <bpmn:outgoing>Flow_02</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_EquiposListos" name="¿Equipos Completos?">
+      <bpmn:incoming>Flow_02</bpmn:incoming>
+      <bpmn:outgoing>Flow_03</bpmn:outgoing>
+      <bpmn:outgoing>Flow_04</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_ActualizarStock" name="Actualizar Stock de Salida">
+      <bpmn:incoming>Flow_03</bpmn:incoming>
+      <bpmn:outgoing>Flow_05</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_RecibirEquipos" name="Recibir y Validar Equipos en Campo">
+      <bpmn:incoming>Flow_05</bpmn:incoming>
+      <bpmn:outgoing>Flow_06</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_InstalarRed" name="Realizar Instalación Física y Configuración">
+      <bpmn:incoming>Flow_06</bpmn:incoming>
+      <bpmn:incoming>Flow_09</bpmn:incoming>
+      <bpmn:outgoing>Flow_07</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_InstalacionOK" name="¿Instalación Exitosa?">
+      <bpmn:incoming>Flow_07</bpmn:incoming>
+      <bpmn:outgoing>Flow_08</bpmn:outgoing>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_RealizarAjustes" name="Realizar Ajustes y Correcciones">
+      <bpmn:incoming>Flow_08</bpmn:incoming>
+      <bpmn:outgoing>Flow_09</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_ConfirmarFinalizacion" name="Confirmar Finalización de instalación">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_RegistrarInstalacion" name="Registrar Instalación y Equipos Asignados">
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Proceso" name="Proceso Finalizado">
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:task id="Task_NotificarFaltantes" name="Notificar Faltantes y Esperar Stock">
+      <bpmn:incoming>Flow_04</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Sistema" name="Proceso finalizado">
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_01" sourceRef="StartEvent_1" targetRef="Task_PrepararEquipos" />
+    <bpmn:sequenceFlow id="Flow_02" sourceRef="Task_PrepararEquipos" targetRef="Gateway_EquiposListos" />
+    <bpmn:sequenceFlow id="Flow_03" name="Sí" sourceRef="Gateway_EquiposListos" targetRef="Task_ActualizarStock" />
+    <bpmn:sequenceFlow id="Flow_04" name="No" sourceRef="Gateway_EquiposListos" targetRef="Task_NotificarFaltantes" />
+    <bpmn:sequenceFlow id="Flow_05" sourceRef="Task_ActualizarStock" targetRef="Task_RecibirEquipos" />
+    <bpmn:sequenceFlow id="Flow_06" sourceRef="Task_RecibirEquipos" targetRef="Task_InstalarRed" />
+    <bpmn:sequenceFlow id="Flow_07" sourceRef="Task_InstalarRed" targetRef="Gateway_InstalacionOK" />
+    <bpmn:sequenceFlow id="Flow_08" name="No" sourceRef="Gateway_InstalacionOK" targetRef="Task_RealizarAjustes" />
+    <bpmn:sequenceFlow id="Flow_09" sourceRef="Task_RealizarAjustes" targetRef="Task_InstalarRed" />
+    <bpmn:sequenceFlow id="Flow_10" name="Sí" sourceRef="Gateway_InstalacionOK" targetRef="Task_ConfirmarFinalizacion" />
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="Task_ConfirmarFinalizacion" targetRef="Task_RegistrarInstalacion" />
+    <bpmn:sequenceFlow id="Flow_12" sourceRef="Task_RegistrarInstalacion" targetRef="EndEvent_Sistema" />
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="Task_NotificarFaltantes" targetRef="EndEvent_Proceso" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">
+      <bpmndi:BPMNShape id="Participant_Instalacion_di" bpmnElement="Participant_Instalacion" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1340" height="650" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Inventario_di" bpmnElement="Lane_Inventario" isHorizontal="true">
+        <dc:Bounds x="190" y="80" width="1310" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Sistema_di" bpmnElement="Lane_Sistema" isHorizontal="true">
+        <dc:Bounds x="190" y="280" width="1310" height="210" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Instaladores_di" bpmnElement="Lane_Instaladores" isHorizontal="true">
+        <dc:Bounds x="190" y="490" width="1310" height="240" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="242" y="152" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="219" y="195" width="83" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PrepararEquipos_di" bpmnElement="Task_PrepararEquipos">
+        <dc:Bounds x="330" y="130" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_EquiposListos_di" bpmnElement="Gateway_EquiposListos" isMarkerVisible="true">
+        <dc:Bounds x="485" y="145" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="473" y="114.5" width="74" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ActualizarStock_di" bpmnElement="Task_ActualizarStock">
+        <dc:Bounds x="590" y="340" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RecibirEquipos_di" bpmnElement="Task_RecibirEquipos">
+        <dc:Bounds x="590" y="560" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_InstalarRed_di" bpmnElement="Task_InstalarRed">
+        <dc:Bounds x="740" y="560" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_InstalacionOK_di" bpmnElement="Gateway_InstalacionOK" isMarkerVisible="true">
+        <dc:Bounds x="895" y="575" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="877" y="632" width="87" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RealizarAjustes_di" bpmnElement="Task_RealizarAjustes">
+        <dc:Bounds x="740" y="670" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ConfirmarFinalizacion_di" bpmnElement="Task_ConfirmarFinalizacion">
+        <dc:Bounds x="1000" y="560" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RegistrarInstalacion_di" bpmnElement="Task_RegistrarInstalacion">
+        <dc:Bounds x="1150" y="340" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Proceso_di" bpmnElement="EndEvent_Proceso">
+        <dc:Bounds x="1402" y="652" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1378" y="695" width="85" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_NotificarFaltantes_di" bpmnElement="Task_NotificarFaltantes">
+        <dc:Bounds x="590" y="130" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Sistema_di" bpmnElement="EndEvent_Sistema">
+        <dc:Bounds x="1302" y="362" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1277" y="405" width="87" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_01_di" bpmnElement="Flow_01">
+        <di:waypoint x="278" y="170" />
+        <di:waypoint x="330" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_02_di" bpmnElement="Flow_02">
+        <di:waypoint x="430" y="170" />
+        <di:waypoint x="485" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03_di" bpmnElement="Flow_03">
+        <di:waypoint x="510" y="195" />
+        <di:waypoint x="510" y="380" />
+        <di:waypoint x="590" y="380" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="518" y="285" width="13" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_04_di" bpmnElement="Flow_04">
+        <di:waypoint x="535" y="170" />
+        <di:waypoint x="590" y="170" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="554" y="152" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05_di" bpmnElement="Flow_05">
+        <di:waypoint x="640" y="420" />
+        <di:waypoint x="640" y="560" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_06_di" bpmnElement="Flow_06">
+        <di:waypoint x="690" y="600" />
+        <di:waypoint x="740" y="600" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_07_di" bpmnElement="Flow_07">
+        <di:waypoint x="840" y="600" />
+        <di:waypoint x="895" y="600" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_08_di" bpmnElement="Flow_08">
+        <di:waypoint x="920" y="625" />
+        <di:waypoint x="920" y="710" />
+        <di:waypoint x="840" y="710" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="928" y="665" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_09_di" bpmnElement="Flow_09">
+        <di:waypoint x="740" y="710" />
+        <di:waypoint x="790" y="710" />
+        <di:waypoint x="790" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
+        <di:waypoint x="945" y="600" />
+        <di:waypoint x="1000" y="600" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="965" y="582" width="13" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="1050" y="560" />
+        <di:waypoint x="1050" y="380" />
+        <di:waypoint x="1150" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12_di" bpmnElement="Flow_12">
+        <di:waypoint x="1250" y="380" />
+        <di:waypoint x="1302" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13">
+        <di:waypoint x="690" y="170" />
+        <di:waypoint x="1420" y="170" />
+        <di:waypoint x="1420" y="652" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>`;
+
+        const viewer = new BpmnJS({
+            container: '#bpmn-container'
+        });
+
+        let currentZoom = 1;
+
+        async function displayDiagram() {
+            try {
+                const { warnings } = await viewer.importXML(bpmnXML);
+                viewer.get('canvas').zoom('fit-viewport');
+                updateZoomLevel();
+                console.log('Rendered BPMN diagram with warnings', warnings);
+            } catch (err) {
+                console.error('could not import BPMN 2.0 diagram', err);
+            }
+        }
+
+        // Update zoom level display
+        function updateZoomLevel() {
+            const zoom = viewer.get('canvas').zoom();
+            currentZoom = Math.round(zoom * 100);
+            document.getElementById('zoom-level').textContent = `${currentZoom}%`;
+        }
+
+        // Zoom controls - CORREGIDOS
+        document.getElementById('zoom-in').addEventListener('click', () => {
+            const canvas = viewer.get('canvas');
+            const currentZoom = canvas.zoom();
+            canvas.zoom(currentZoom * 1.2);
+            updateZoomLevel();
+        });
+
+        document.getElementById('zoom-out').addEventListener('click', () => {
+            const canvas = viewer.get('canvas');
+            const currentZoom = canvas.zoom();
+            canvas.zoom(currentZoom * 0.8);
+            updateZoomLevel();
+        });
+
+        document.getElementById('zoom-fit').addEventListener('click', () => {
+            viewer.get('canvas').zoom('fit-viewport');
+            updateZoomLevel();
+        });
+
+        document.getElementById('zoom-reset').addEventListener('click', () => {
+            viewer.get('canvas').zoom(1.0);
+            updateZoomLevel();
+        });
+
+        // Download functionality
+        document.getElementById('download').addEventListener('click', async () => {
+            try {
+                const { svg } = await viewer.saveSVG();
+                const blob = new Blob([svg], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'diagrama-instalacion-redes.svg';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (err) {
+                console.error('Error downloading diagram', err);
+                alert('Error al descargar el diagrama. Intente nuevamente.');
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            setTimeout(() => {
+                viewer.get('canvas').resized();
+            }, 200);
+        });
+
+        // Initialize the diagram
+        displayDiagram();
+    </script>
+</body>
+</html>
